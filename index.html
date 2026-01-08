@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALPHA ARC Studios | Gen-Z Brand Agency</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config for Custom Colors/Fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617', // Custom dark background
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'bounce-slow': 'bounce 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-nav { background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 selection:bg-indigo-500 selection:text-white">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICON COMPONENTS (Embedded for reliability) ---
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const ArrowRight = (props) => <IconBase {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></IconBase>;
+        const ChevronDown = (props) => <IconBase {...props}><path d="m6 9 6 6 6-6"/></IconBase>;
+        const MenuIcon = (props) => <IconBase {...props}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconBase>;
+        const XIcon = (props) => <IconBase {...props}><path d="M18 6 6 18"/><path d="m6 6 18 18"/></IconBase>;
+        const Linkedin = (props) => <IconBase {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></IconBase>;
+        const Mail = (props) => <IconBase {...props}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></IconBase>;
+        const Cpu = (props) => <IconBase {...props}><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></IconBase>;
+        const PenTool = (props) => <IconBase {...props}><path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/></IconBase>;
+        const BarChart3 = (props) => <IconBase {...props}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></IconBase>;
+        const Layout = (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></IconBase>;
+        const Zap = (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>;
+        const CheckCircle2 = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></IconBase>;
+        const Sparkles = (props) => <IconBase {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 18v4"/><path d="M15 20h4"/></IconBase>;
+        const RefreshCw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconBase>;
+        const AlertCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconBase>;
+
+
+        // --- MAIN COMPONENTS ---
+
+        const Navigation = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [scrolled, setScrolled] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    setScrolled(window.scrollY > 50);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const navLinks = [
+                { name: 'Manifesto', href: '#about' },
+                { name: 'Services', href: '#services' },
+                { name: 'AI Demo', href: '#playground' },
+                { name: 'Founders', href: '#team' },
+                { name: 'Work', href: '#work' },
+            ];
+
+            return (
+                <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'glass-nav border-b border-white/10 py-4' : 'bg-transparent py-6'}`}>
+                    <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+                        <div className="text-2xl font-bold tracking-tighter text-white">
+                            ALPHA ARC<span className="text-indigo-500">.</span>
+                        </div>
+
+                        {/* Desktop Nav */}
+                        <div className="hidden md:flex items-center space-x-8">
+                            {navLinks.map((link) => (
+                                <a key={link.name} href={link.href} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                                    {link.name}
+                                </a>
+                            ))}
+                            <a href="#contact" className="bg-white text-slate-950 px-5 py-2 rounded-full font-semibold text-sm hover:bg-indigo-50 transition-colors">
+                                Start Project
+                            </a>
+                        </div>
+
+                        {/* Mobile Toggle */}
+                        <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
+                        </button>
+                    </div>
+
+                    {/* Mobile Menu */}
+                    {isOpen && (
+                        <div className="absolute top-full left-0 w-full bg-slate-950 border-b border-white/10 p-6 md:hidden flex flex-col space-y-4 shadow-2xl">
+                            {navLinks.map((link) => (
+                                <a key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-lg font-medium text-slate-300 hover:text-indigo-400">
+                                    {link.name}
+                                </a>
+                            ))}
+                            <a href="#contact" onClick={() => setIsOpen(false)} className="bg-indigo-600 text-white text-center py-3 rounded-lg font-semibold">
+                                Let's Talk
+                            </a>
+                        </div>
+                    )}
+                </nav>
+            );
+        };
+
+        const Hero = () => {
+            return (
+                <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-slate-950">
+                    <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[128px]"></div>
+                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[128px]"></div>
+                    
+                    <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+                        <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm animate-fade-in">
+                            <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                            <span className="text-xs font-medium text-indigo-200 tracking-wide uppercase">Gen-Z Energy. Enterprise Precision.</span>
+                        </div>
+                        
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-8 leading-[1.1] animate-fade-in">
+                            Make Your Brand <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                                Look Inevitable.
+                            </span>
+                        </h1>
+                        
+                        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in">
+                            We help founders turn their vision into offers that solve real problems. 
+                            Human-led storytelling backed by AI systems that stop the scroll.
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in">
+                            <a href="#contact" className="group relative px-8 py-4 bg-white text-slate-950 rounded-full font-bold transition-all hover:scale-105 active:scale-95">
+                                Build Your System
+                                <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                            </a>
+                            <a href="#work" className="px-8 py-4 text-white border border-white/20 rounded-full font-medium hover:bg-white/5 transition-all">
+                                View Case Studies
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce-slow text-slate-500">
+                        <ChevronDown size={24} />
+                    </div>
+                </section>
+            );
+        };
+
+        const About = () => {
+            return (
+                <section id="about" className="py-24 bg-slate-950 border-t border-white/5">
+                    <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                                No Jargon. <br />
+                                No Fluff. <br />
+                                <span className="text-slate-500">Just Impact.</span>
+                            </h2>
+                            <div className="space-y-6 text-lg text-slate-400">
+                                <p>
+                                    Founders are busy building what they love. But somewhere along the way, 
+                                    the question arises: <em className="text-white not-italic">"What if I create content around this?"</em>
+                                </p>
+                                <p>
+                                    That's where Alpha Arc steps in. We are a Gen-Z agency built for speed and substance.
+                                    We don't do "brand awareness campaigns" that lead nowhere. We build systems.
+                                </p>
+                                <div className="pt-4 flex items-center gap-8 border-t border-white/10 mt-8">
+                                    <div>
+                                        <span className="block text-3xl font-bold text-indigo-400">2x</span>
+                                        <span className="text-sm text-slate-500">Faster Output</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-3xl font-bold text-indigo-400">100%</span>
+                                        <span className="text-sm text-slate-500">Founder Led</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="relative">
+                            <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl opacity-20 blur-lg"></div>
+                            <div className="relative bg-slate-900 border border-white/10 p-8 rounded-2xl">
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-4 p-4 bg-white/5 rounded-lg border border-white/5">
+                                        <div className="bg-indigo-500/20 p-2 rounded text-indigo-400"><Cpu size={20} /></div>
+                                        <div><h4 className="text-white font-medium">AI Automation</h4><p className="text-sm text-slate-400">Automating the boring bits.</p></div>
+                                    </div>
+                                    <div className="flex items-start gap-4 p-4 bg-white/5 rounded-lg border border-white/5">
+                                        <div className="bg-purple-500/20 p-2 rounded text-purple-400"><PenTool size={20} /></div>
+                                        <div><h4 className="text-white font-medium">Human Storytelling</h4><p className="text-sm text-slate-400">Punchy, relatable narratives.</p></div>
+                                    </div>
+                                    <div className="flex items-start gap-4 p-4 bg-white/5 rounded-lg border border-white/5">
+                                        <div className="bg-pink-500/20 p-2 rounded text-pink-400"><BarChart3 size={20} /></div>
+                                        <div><h4 className="text-white font-medium">Measurable KPIs</h4><p className="text-sm text-slate-400">Turning visibility into deals.</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const ServiceCard = ({ icon: Icon, title, description, benefits, accentColor }) => (
+            <div className={`group relative bg-slate-900 border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300 overflow-hidden`}>
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-${accentColor}-500/10 rounded-full blur-[50px] group-hover:bg-${accentColor}-500/20 transition-all`}></div>
+                
+                <div className={`mb-6 inline-flex p-3 rounded-lg bg-${accentColor}-500/10 text-${accentColor}-400`}>
+                    <Icon size={28} />
+                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-4">{title}</h3>
+                <p className="text-slate-400 mb-6 leading-relaxed">{description}</p>
+                
+                <div className="space-y-3">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Why it matters</h4>
+                    <ul className="space-y-2">
+                        {benefits.map((benefit, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                                <CheckCircle2 size={16} className={`mt-0.5 text-${accentColor}-400 shrink-0`} />
+                                {benefit}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        );
+
+        const Services = () => {
+            const services = [
+                {
+                    icon: Linkedin,
+                    title: "LinkedIn & Personal Branding",
+                    description: "We manage your LinkedIn end-to-end. Ghostwritten posts, high-retention carousels, and engagement.",
+                    benefits: ["Builds instant recall", "Turns visibility into deals", "Scales trust consistently"],
+                    accentColor: "blue"
+                },
+                {
+                    icon: Zap,
+                    title: "AI Workflows & Agents",
+                    description: "Automate content generation, ad creative loops, and build smart agents that qualify leads.",
+                    benefits: ["Reduces CAC significantly", "Automates routine tasks", "Scales reach effortlessly"],
+                    accentColor: "indigo"
+                },
+                {
+                    icon: Layout,
+                    title: "AI-Integrated Web Design",
+                    description: "Fast, conversion-focused websites that use AI to personalize copy and integrate with ad funnels.",
+                    benefits: ["Personalized journeys", "Seamless CRM integration", "Designed for conversion"],
+                    accentColor: "purple"
+                }
+            ];
+
+            return (
+                <section id="services" className="py-24 bg-slate-950 relative">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="mb-16 md:flex justify-between items-end">
+                            <div className="max-w-2xl">
+                                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                                    Our System. <br />
+                                    <span className="text-slate-500">Your Unfair Advantage.</span>
+                                </h2>
+                                <p className="text-lg text-slate-400">
+                                    We don't just "do marketing." We build assets that compound over time.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {services.map((service, index) => (
+                                <ServiceCard key={index} {...service} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const AIPlayground = () => {
+            const [activeTab, setActiveTab] = useState('hooks'); // 'hooks' or 'audit'
+            const [input, setInput] = useState('');
+            const [result, setResult] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+
+            const handleGenerate = async () => {
+                if (!input.trim()) return;
+                
+                setLoading(true);
+                setError('');
+                setResult('');
+
+                // IMPORTANT: Insert your API Key here for functionality
+                const apiKey = ""; 
+                
+                const systemPrompts = {
+                    hooks: `You are the "Viral Content Strategist" AI for Alpha Arc Studios. 
+                    Your Goal: Take a boring topic and turn it into 3 "inevitable" LinkedIn hooks that stop the scroll.
+                    Style: Punchy, Gen-Z professional, controversial but credible. No hashtags. No emojis unless necessary for impact.
+                    Output format: Just the 3 numbered hooks.`,
+                    
+                    audit: `You are the "Brutal Brand Strategist" AI for Alpha Arc Studios.
+                    Your Goal: Critique the user's bio or tagline. 
+                    Style: Direct, slightly savage, but ultimately helpful. "No fluff." 
+                    Output format: 
+                    1. One sentence roasting why it's boring.
+                    2. One sentence suggesting a high-converting alternative.`
+                };
+
+                try {
+                    const response = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: input }] }],
+                                systemInstruction: { parts: [{ text: systemPrompts[activeTab] }] },
+                            }),
+                        }
+                    );
+
+                    if (!response.ok) throw new Error('AI System Overload. Try again.');
+
+                    const data = await response.json();
+                    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (generatedText) {
+                        setResult(generatedText);
+                    } else {
+                        throw new Error('No content generated');
+                    }
+                } catch (err) {
+                    setError('System busy (or Missing API Key). Try again shortly.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <section id="playground" className="py-24 bg-slate-900 border-y border-white/5 relative overflow-hidden">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div className="max-w-4xl mx-auto px-6 relative z-10">
+                        <div className="text-center mb-12">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-4 border border-indigo-500/20">
+                                <Sparkles size={12} />
+                                Powered by Gemini 2.5
+                            </div>
+                            <h2 className="text-4xl font-bold text-white mb-4">Test Our System</h2>
+                            <p className="text-slate-400">
+                                Experience a fragment of our creative engine. 
+                            </p>
+                        </div>
+
+                        <div className="bg-slate-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                            {/* Tabs */}
+                            <div className="flex border-b border-white/10">
+                                <button 
+                                    onClick={() => { setActiveTab('hooks'); setResult(''); setInput(''); }}
+                                    className={`flex-1 py-4 text-sm font-bold tracking-wide transition-colors ${activeTab === 'hooks' ? 'bg-indigo-600/10 text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    VIRAL HOOK GENERATOR
+                                </button>
+                                <button 
+                                    onClick={() => { setActiveTab('audit'); setResult(''); setInput(''); }}
+                                    className={`flex-1 py-4 text-sm font-bold tracking-wide transition-colors ${activeTab === 'audit' ? 'bg-purple-600/10 text-purple-400 border-b-2 border-purple-500' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    THE BRUTAL AUDIT
+                                </button>
+                            </div>
+
+                            <div className="p-8">
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                                        {activeTab === 'hooks' ? 'What topic do you want to post about?' : 'Paste your current bio or tagline:'}
+                                    </label>
+                                    <div className="relative">
+                                        <textarea 
+                                            value={input}
+                                            onChange={(e) => setInput(e.target.value)}
+                                            className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all min-h-[100px]"
+                                            placeholder={activeTab === 'hooks' ? "e.g., Why founders shouldn't raise VC money too early..." : "e.g., Helping brands grow with data-driven insights..."}
+                                        ></textarea>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={handleGenerate}
+                                    disabled={loading || !input}
+                                    className={`w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all ${loading || !input ? 'bg-slate-800 cursor-not-allowed opacity-50' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-indigo-900/20'}`}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <RefreshCw className="animate-spin" size={20} />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles size={20} />
+                                            Generate {activeTab === 'hooks' ? 'Hooks' : 'Critique'} ✨
+                                        </>
+                                    )}
+                                </button>
+
+                                {error && (
+                                    <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm">
+                                        <AlertCircle size={16} />
+                                        {error}
+                                    </div>
+                                )}
+
+                                {result && (
+                                    <div className="mt-8 animate-fade-in">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+                                            <span className="text-xs font-bold text-slate-500 uppercase">Output Generated</span>
+                                        </div>
+                                        <div className="bg-slate-900/50 border border-white/5 rounded-xl p-6 relative">
+                                            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500 rounded-l-xl"></div>
+                                            <pre className="whitespace-pre-wrap font-sans text-slate-300 leading-relaxed">{result}</pre>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const FounderCard = ({ name, role, bio, tags, imageFallback, color }) => (
+            <div className="bg-slate-900/50 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-all group">
+                <div className={`h-2 bg-gradient-to-r from-slate-800 to-slate-900 group-hover:from-${color}-500 group-hover:to-purple-600 transition-all duration-500`}></div>
+                <div className="p-8">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 className="text-2xl font-bold text-white">{name}</h3>
+                            <p className="text-indigo-400 font-medium">{role}</p>
+                        </div>
+                        <div className={`w-12 h-12 rounded-full bg-${color}-500/10 flex items-center justify-center text-${color}-400`}>
+                            {imageFallback}
+                        </div>
+                    </div>
+                    <p className="text-slate-400 mb-8 leading-relaxed text-sm">{bio}</p>
+                    <div className="flex flex-wrap gap-2">
+                        {tags.map((tag, idx) => (
+                            <span key={idx} className="px-3 py-1 bg-white/5 rounded-full text-xs font-medium text-slate-300 border border-white/5">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const Team = () => {
+            return (
+                <section id="team" className="py-24 bg-slate-950 border-t border-white/5">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="text-center max-w-3xl mx-auto mb-16">
+                            <h2 className="text-4xl font-bold text-white mb-4">The Creative Engine</h2>
+                            <p className="text-slate-400">A partnership between visual precision and narrative strategy.</p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                            <FounderCard 
+                                name="Aditya"
+                                role="Co-founder, Design & AI"
+                                color="indigo"
+                                imageFallback={<Layout size={20} />}
+                                bio="Design nerd since long before it was 'UX.' Six years of building visuals that stop thumbs, two years building AI that automates the boring bits. Runs the studio's creative engine and AI pipelines."
+                                tags={['Visuals', 'UX Architecture', 'Ad Creative', 'AI Pipelines']}
+                            />
+                            <FounderCard 
+                                name="Suhani"
+                                role="Co-founder, Strategy & Writing"
+                                color="purple"
+                                imageFallback={<PenTool size={20} />}
+                                bio="Officially a market researcher; unofficially a writer from 5–9. She makes complex ideas feel human, punchy, and shareable. If a founder needs a voice that sounds both credible and relatable, she writes it."
+                                tags={['Ghostwriting', 'Brand Voice', 'Content Strategy', 'Market Research']}
+                            />
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Work = () => {
+            const projects = [
+                { category: "SaaS Founder", title: "Scaling Authority for Series B", stat: "+450% Engagement", desc: "Full LinkedIn overhaul and AI content system." },
+                { category: "DTC Brand", title: "Ad Creative Automation", stat: "-30% CAC", desc: "Generative workflow for testing 50+ ad variations weekly." },
+                { category: "Fintech", title: "The 'Human' Finance Blog", stat: "20k+ Readers", desc: "Strategic ghostwriting simplifying financial models." }
+            ];
+
+            return (
+                <section id="work" className="py-24 bg-slate-900">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <h2 className="text-4xl font-bold text-white mb-12">Selected Works</h2>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {projects.map((project, idx) => (
+                                <div key={idx} className="group cursor-pointer">
+                                    <div className="h-64 bg-slate-800 rounded-lg mb-6 relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                                            <div className="w-full h-full opacity-10 bg-gradient-to-tr from-indigo-400 via-slate-900 to-slate-950"></div>
+                                            <div className="absolute text-slate-600 font-mono text-xs tracking-widest uppercase border border-slate-700 px-3 py-1 rounded">
+                                                Case Study {idx + 1}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-indigo-400 text-sm font-medium">{project.category}</span>
+                                        <span className="text-white text-sm font-bold bg-white/10 px-2 py-1 rounded">{project.stat}</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">{project.title}</h3>
+                                    <p className="text-slate-400 text-sm">{project.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = () => (
+            <footer id="contact" className="bg-slate-950 py-24 border-t border-white/10">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid md:grid-cols-2 gap-16 mb-16">
+                        <div>
+                            <h2 className="text-5xl font-bold text-white mb-6">Ready to look <span className="text-indigo-500">inevitable?</span></h2>
+                            <p className="text-slate-400 text-lg mb-8 max-w-md">Your brand. Your voice. Our system.</p>
+                            <div className="flex gap-4">
+                                <a href="#" className="p-3 bg-white/5 rounded-full text-white hover:bg-indigo-600 transition-colors"><Linkedin size={24} /></a>
+                                <a href="#" className="p-3 bg-white/5 rounded-full text-white hover:bg-indigo-600 transition-colors"><Mail size={24} /></a>
+                            </div>
+                        </div>
+                        <div className="bg-white/5 p-8 rounded-2xl border border-white/5 backdrop-blur-sm">
+                            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                                <input type="text" className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white" placeholder="Name" />
+                                <input type="email" className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white" placeholder="Email" />
+                                <textarea className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white h-32" placeholder="Tell us about your vision..."></textarea>
+                                <button className="w-full bg-white text-slate-950 font-bold py-4 rounded-lg hover:bg-indigo-50 transition-colors">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-slate-500 text-sm">
+                        <p>© 2024 ALPHA ARC Studios.</p>
+                        <div className="flex gap-6 mt-4 md:mt-0"><a href="#">Privacy</a><a href="#">Terms</a></div>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            return (
+                <div className="font-sans min-h-screen">
+                    <Navigation />
+                    <main>
+                        <Hero />
+                        <About />
+                        <Services />
+                        <AIPlayground />
+                        <Team />
+                        <Work />
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
